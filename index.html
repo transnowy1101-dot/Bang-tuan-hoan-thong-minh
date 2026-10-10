@@ -141,7 +141,94 @@ function simple(e){return e.category}function css(e){return e.category==='Khí h
 function card(e){return `<button class="el ${css(e)}" data-z="${e.z}"><div class="z">${e.z}</div><div class="sym">${e.symbol}</div><div class="name">${e.name}</div><div class="mass">${e.symbol === 'Cl' ? '35,5' : Math.round(Number(e.mass))}</div></button>`}
 function render(){const q=$('search').value.trim().toLowerCase(),f=$('filter').value;grid.innerHTML='';for(let p=1;p<=7;p++){for(let c=1;c<=18;c++){const e=elements.find(x=>x.period===p&&x.group===c);const d=document.createElement('div');if(e&&(!q||String(e.z)===q||e.symbol.toLowerCase().includes(q)||e.name.toLowerCase().includes(q))&&(f==='all'||e.category===f))d.innerHTML=card(e);else d.className='empty';grid.appendChild(d)}}for(const [label,a,b] of [['Lantan',58,71],['Actini',90,103]]){const l=document.createElement('div');l.className='label';l.textContent=label+' (dãy riêng)';grid.appendChild(l);for(let z=a;z<=b;z++){const e=elements[z-1],d=document.createElement('div');if((!q||String(e.z)===q||e.symbol.toLowerCase().includes(q)||e.name.toLowerCase().includes(q))&&(f==='all'||e.category===f))d.innerHTML=card(e);else d.className='empty';grid.appendChild(d)}}document.querySelectorAll('.el').forEach(b=>b.onclick=()=>openElement(+b.dataset.z))}
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function openElement(z){const e=elements[z-1],s=shared[z]||{};details.innerHTML=`<div style="display:flex;gap:14px;align-items:center"><div class="sym" style="font-size:48px">${e.symbol}</div><div><h2>${e.name}</h2><p>Nguyên tố số ${z} · ${e.category} · Chu kỳ ${e.period}</p></div></div><div class="fields"><label>Cấu hình electron<textarea id="electronInput">${escapeHtml(s.electron_config)}</textarea></label><label>Tính chất vật lí<textarea id="physicalInput">${escapeHtml(s.physical_properties)}</textarea></label><label>Tính chất hoá học<textarea id="chemicalInput">${escapeHtml(s.chemical_properties)}</textarea></label><label>Fun facts<textarea id="funInput">${escapeHtml(s.fun_facts)}</textarea></label><button id="save" class="save">💾 Lưu thông tin chung</button><p id="saveStatus" class="status"></p></div>`;$('save').onclick=async()=>{const row={atomic_number:z,electron_config:$('electronInput').value,physical_properties:$('physicalInput').value,chemical_properties:$('chemicalInput').value,fun_facts:$('funInput').value,updated_at:new Date().toISOString()};$('saveStatus').textContent='Đang lưu…';const {error}=await db.from('elements_info').upsert(row,{onConflict:'atomic_number'});if(error){$('saveStatus').textContent='Lỗi lưu: '+error.message;return}shared[z]=row;$('saveStatus').textContent='✅ Đã lưu chung trên mạng!'};modal.classList.add('show')}
+function openElement(z) {
+  const e = elements[z - 1];
+  const s = shared[z] || {};
+
+  details.innerHTML = `
+    <div class="element-header">
+      <div class="sym" style="font-size:48px">${escapeHtml(e.symbol)}</div>
+      <div>
+        <h2>${escapeHtml(e.name)}</h2>
+        <p>Nguyên tố số ${z}</p>
+      </div>
+    </div>
+
+    <h3>📘 6 thông tin cơ bản</h3>
+    <div class="facts">
+      <div class="fact">
+        <b>Số hiệu nguyên tử</b>${z}
+      </div>
+      <div class="fact">
+        <b>Khối lượng nguyên tử</b>${escapeHtml(String(e.mass ?? e.atomic_mass ?? "Chưa có dữ liệu"))}
+      </div>
+      <div class="fact">
+        <b>Phân loại</b>${escapeHtml(e.category ?? "Chưa có dữ liệu")}
+      </div>
+      <div class="fact">
+        <b>Chu kỳ</b>${escapeHtml(String(e.period ?? "Chưa có dữ liệu"))}
+      </div>
+      <div class="fact">
+        <b>Nhóm</b>${escapeHtml(String(e.group ?? "Chưa có dữ liệu"))}
+      </div>
+      <div class="fact">
+        <b>Trạng thái ở điều kiện thường</b>${escapeHtml(e.state ?? "Chưa có dữ liệu")}
+      </div>
+    </div>
+
+    <h3>🧪 4 thông tin bổ sung</h3>
+    <div class="editbox">
+      <label>Cấu hình electron
+        <textarea id="electronInput">${escapeHtml(s.electron_config || "")}</textarea>
+      </label>
+      <label>Tính chất vật lí
+        <textarea id="physicalInput">${escapeHtml(s.physical_properties || "")}</textarea>
+      </label>
+      <label>Tính chất hoá học
+        <textarea id="chemicalInput">${escapeHtml(s.chemical_properties || "")}</textarea>
+      </label>
+      <label>Fun facts
+        <textarea id="funInput">${escapeHtml(s.fun_facts || "")}</textarea>
+      </label>
+
+      <button id="save" class="save">💾 Lưu thông tin chung</button>
+      <p id="saveStatus" class="status"></p>
+    </div>
+  `;
+
+  document.getElementById("save").onclick = async () => {
+    const row = {
+      atomic_number: z,
+      electron_config: document.getElementById("electronInput").value,
+      physical_properties: document.getElementById("physicalInput").value,
+      chemical_properties: document.getElementById("chemicalInput").value,
+      fun_facts: document.getElementById("funInput").value,
+      updated_at: new Date().toISOString()
+    };
+
+    const status = document.getElementById("saveStatus");
+    const button = document.getElementById("save");
+    status.textContent = "Đang lưu...";
+    button.disabled = true;
+
+    try {
+      const { error } = await db
+        .from("elements_info")
+        .upsert(row, { onConflict: "atomic_number" });
+
+      if (error) throw error;
+
+      shared[z] = row;
+      status.textContent = "✅ Đã lưu thông tin chung!";
+    } catch (error) {
+      status.textContent = "❌ Lỗi lưu: " + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  };
+
+  modal.classList.add("show");
+}
 async function load(){const {data,error}=await db.from('elements_info').select('*');if(error){$('status').textContent='Không tải được dữ liệu: '+error.message+' — kiểm tra cấu hình Supabase/policy.';return}shared={};(data||[]).forEach(r=>shared[r.atomic_number]=r);$('status').textContent='✅ Đã kết nối Supabase · '+data.length+' nguyên tố đã có dữ liệu chung';}
 $('search').oninput=render;$('filter').onchange=render;$('close').onclick=()=>modal.classList.remove('show');modal.onclick=e=>{if(e.target===modal)modal.classList.remove('show')};
 render();load();
