@@ -6,6 +6,36 @@
 <style>
 :root{color-scheme:dark;--bg:#07111f;--card:#0d1b2e;--line:#27415f;--txt:#eef5ff;--muted:#9fb2c9;--accent:#6ee7f7}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#07111f,#10213a);color:var(--txt);font-family:system-ui,Arial,sans-serif}main{padding:24px;max-width:1500px;margin:auto}header{text-align:center}h1{font-size:clamp(28px,4vw,44px);margin:8px}p{color:var(--muted)}.tools{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px}.tools input,.tools select{padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt)}#grid{display:grid;grid-template-columns:repeat(18,minmax(58px,1fr));gap:5px;overflow:auto}.el{background:var(--card);border:1px solid var(--line);border-top:3px solid #60a5fa;border-radius:8px;min-height:72px;color:var(--txt);text-align:left;padding:6px;cursor:pointer}.el:hover{border-color:var(--accent)}.z,.mass{font-size:10px;color:var(--muted)}.sym{font-size:23px;font-weight:800}.name{font-size:10px;overflow:hidden;text-overflow:ellipsis}.empty{visibility:hidden}.cat-hi{border-top-color:#34d399}.cat-kim{border-top-color:#f59e0b}.cat-phi{border-top-color:#60a5fa}.label{grid-column:1/-1;color:var(--muted);padding:8px}.legend{text-align:center;color:var(--muted);margin:16px}.modal{display:none;position:fixed;inset:0;background:#000a;align-items:center;justify-content:center;padding:14px;overflow:auto}.modal.show{display:flex}.panel{background:#0d1b2e;border:1px solid var(--line);border-radius:18px;padding:22px;width:min(600px,100%);max-height:95vh;overflow:auto;position:relative}.close{float:right;font-size:24px;background:none;border:0;color:var(--txt);cursor:pointer}.fields{display:grid;gap:10px}.fields label{font-size:13px;color:var(--muted)}textarea{width:100%;min-height:68px;background:#081626;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:10px;font:inherit}.save{padding:11px 15px;border-radius:9px;background:#164e63;color:white;border:1px solid #2b7890;cursor:pointer}.status{font-size:12px;color:var(--muted)}@media(max-width:700px){main{padding:12px}#grid{min-width:1100px}.table-wrap{overflow:auto}}
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  line-height: 1.5;
+  padding: 14px;
+}
+
+.fact b {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+
+.facts {
+  gap: 12px;
+}
+
+.editbox {
+  margin-top: 24px;
+  display: grid;
+  gap: 14px;
+}
+
+.editbox label {
+  display: block;
+  margin-bottom: 4px;
+  line-height: 1.6;
+}
 </style>
 </head>
 <body><main><header><h1>⚛️ Bảng tuần hoàn thông minh</h1><p>Bấm vào nguyên tố để xem và cùng cập nhật thông tin. Dữ liệu được lưu chung trên Supabase.</p>
