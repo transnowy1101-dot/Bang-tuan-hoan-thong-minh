@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bảng tuần hoàn thông minh</title>
+<style>
+:root{color-scheme:dark;--bg:#07111f;--card:#0d1b2e;--line:#27415f;--txt:#eef5ff;--muted:#9fb2c9;--accent:#6ee7f7}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#07111f,#10213a);color:var(--txt);font-family:system-ui,Arial,sans-serif}main{padding:24px;max-width:1500px;margin:auto}header{text-align:center}h1{font-size:clamp(28px,4vw,44px);margin:8px}p{color:var(--muted)}.tools{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px}.tools input,.tools select{padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt)}#grid{display:grid;grid-template-columns:repeat(18,minmax(58px,1fr));gap:5px;overflow:auto}.el{background:var(--card);border:1px solid var(--line);border-top:3px solid #60a5fa;border-radius:8px;min-height:72px;color:var(--txt);text-align:left;padding:6px;cursor:pointer}.el:hover{border-color:var(--accent)}.z,.mass{font-size:10px;color:var(--muted)}.sym{font-size:23px;font-weight:800}.name{font-size:10px;overflow:hidden;text-overflow:ellipsis}.empty{visibility:hidden}.cat-hi{border-top-color:#34d399}.cat-kim{border-top-color:#f59e0b}.cat-phi{border-top-color:#60a5fa}.label{grid-column:1/-1;color:var(--muted);padding:8px}.legend{text-align:center;color:var(--muted);margin:16px}.modal{display:none;position:fixed;inset:0;background:#000a;align-items:center;justify-content:center;padding:14px;overflow:auto}.modal.show{display:flex}.panel{background:#0d1b2e;border:1px solid var(--line);border-radius:18px;padding:22px;width:min(600px,100%);max-height:95vh;overflow:auto;position:relative}.close{float:right;font-size:24px;background:none;border:0;color:var(--txt);cursor:pointer}.fields{display:grid;gap:10px}.fields label{font-size:13px;color:var(--muted)}textarea{width:100%;min-height:68px;background:#081626;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:10px;font:inherit}.save{padding:11px 15px;border-radius:9px;background:#164e63;color:white;border:1px solid #2b7890;cursor:pointer}.status{font-size:12px;color:var(--muted)}@media(max-width:700px){main{padding:12px}#grid{min-width:1100px}.table-wrap{overflow:auto}}
+</style>
+</head>
+<body><main><header><h1>⚛️ Bảng tuần hoàn thông minh</h1><p>Bấm vào nguyên tố để xem và cùng cập nhật thông tin. Dữ liệu được lưu chung trên Supabase.</p>
+<div class="tools"><input id="search" placeholder="🔎 Tìm tên, kí hiệu, số nguyên tử"><select id="filter"><option value="all">Tất cả</option><option>Kim loại</option><option>Phi kim</option><option>Khí hiếm</option></select></div><p id="status" class="status">Đang kết nối dữ liệu…</p></header>
+<div class="table-wrap"><div id="grid"></div></div><div class="legend">🟠 Kim loại　 🔵 Phi kim　 🟢 Khí hiếm</div></main>
+<div id="modal" class="modal"><section class="panel"><button id="close" class="close">×</button><div id="details"></div></section></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://jwghzsqwyraebmwfqqlo.supabase.co';
+const SUPABASE_KEY='sb_publishable_0tvvamkFpB3-1harhxTjgg_7t-06Wms';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const raw=`H|Hydrogen|1.008|Phi kim|1|1|Khí
+He|Helium|4.0026|Khí hiếm|1|18|Khí
+Li|Lithium|6.94|Kim loại|2|1|Rắn
+Be|Beryllium|9.0122|Kim loại|2|2|Rắn
+B|Boron|10.81|Phi kim|2|13|Rắn
+C|Carbon|12.011|Phi kim|2|14|Rắn
+N|Nitrogen|14.007|Phi kim|2|15|Khí
+O|Oxygen|15.999|Phi kim|2|16|Khí
+F|Fluorine|18.998|Phi kim|2|17|Khí
+Ne|Neon|20.180|Khí hiếm|2|18|Khí
+Na|Sodium|22.990|Kim loại|3|1|Rắn
+Mg|Magnesium|24.305|Kim loại|3|2|Rắn
+Al|Aluminium|26.982|Kim loại|3|13|Rắn
+Si|Silicon|28.085|Phi kim|3|14|Rắn
+P|Phosphorus|30.974|Phi kim|3|15|Rắn
+S|Sulfur|32.06|Phi kim|3|16|Rắn
+Cl|Chlorine|35.5|Phi kim|3|17|Khí
+Ar|Argon|39.948|Khí hiếm|3|18|Khí
+K|Potassium|39.098|Kim loại|4|1|Rắn
+Ca|Calcium|40.078|Kim loại|4|2|Rắn
+Sc|Scandium|44.956|Kim loại|4|3|Rắn
+Ti|Titanium|47.867|Kim loại|4|4|Rắn
+V|Vanadium|50.942|Kim loại|4|5|Rắn
+Cr|Chromium|51.996|Kim loại|4|6|Rắn
+Mn|Manganese|54.938|Kim loại|4|7|Rắn
+Fe|Iron|55.845|Kim loại|4|8|Rắn
+Co|Cobalt|58.933|Kim loại|4|9|Rắn
+Ni|Nickel|58.693|Kim loại|4|10|Rắn
+Cu|Copper|63.546|Kim loại|4|11|Rắn
+Zn|Zinc|65.38|Kim loại|4|12|Rắn
+Ga|Gallium|69.723|Kim loại|4|13|Rắn
+Ge|Germanium|72.630|Phi kim|4|14|Rắn
+As|Arsenic|74.922|Phi kim|4|15|Rắn
+Se|Selenium|78.971|Phi kim|4|16|Rắn
+Br|Bromine|79.904|Phi kim|4|17|Lỏng
+Kr|Krypton|83.798|Khí hiếm|4|18|Khí
+Rb|Rubidium|85.468|Kim loại|5|1|Rắn
+Sr|Strontium|87.62|Kim loại|5|2|Rắn
+Y|Yttrium|88.906|Kim loại|5|3|Rắn
+Zr|Zirconium|91.224|Kim loại|5|4|Rắn
+Nb|Niobium|92.906|Kim loại|5|5|Rắn
+Mo|Molybdenum|95.95|Kim loại|5|6|Rắn
+Tc|Technetium|98|Kim loại|5|7|Rắn
+Ru|Ruthenium|101.07|Kim loại|5|8|Rắn
+Rh|Rhodium|102.91|Kim loại|5|9|Rắn
+Pd|Palladium|106.42|Kim loại|5|10|Rắn
+Ag|Silver|107.87|Kim loại|5|11|Rắn
+Cd|Cadmium|112.41|Kim loại|5|12|Rắn
+In|Indium|114.82|Kim loại|5|13|Rắn
+Sn|Tin|118.71|Kim loại|5|14|Rắn
+Sb|Antimony|121.76|Phi kim|5|15|Rắn
+Te|Tellurium|127.60|Phi kim|5|16|Rắn
+I|Iodine|126.90|Phi kim|5|17|Rắn
+Xe|Xenon|131.29|Khí hiếm|5|18|Khí
+Cs|Cesium|132.91|Kim loại|6|1|Rắn
+Ba|Barium|137.33|Kim loại|6|2|Rắn
+La|Lanthanum|138.91|Kim loại|6|3|Rắn
+Ce|Cerium|140.12|Kim loại|6|4|Rắn
+Pr|Praseodymium|140.91|Kim loại|6|5|Rắn
+Nd|Neodymium|144.24|Kim loại|6|6|Rắn
+Pm|Promethium|145|Kim loại|6|7|Rắn
+Sm|Samarium|150.36|Kim loại|6|8|Rắn
+Eu|Europium|151.96|Kim loại|6|9|Rắn
+Gd|Gadolinium|157.25|Kim loại|6|10|Rắn
+Tb|Terbium|158.93|Kim loại|6|11|Rắn
+Dy|Dysprosium|162.50|Kim loại|6|12|Rắn
+Ho|Holmium|164.93|Kim loại|6|13|Rắn
+Er|Erbium|167.26|Kim loại|6|14|Rắn
+Tm|Thulium|168.93|Kim loại|6|15|Rắn
+Yb|Ytterbium|173.05|Kim loại|6|16|Rắn
+Lu|Lutetium|174.97|Kim loại|6|17|Rắn
+Hf|Hafnium|178.49|Kim loại|6|4|Rắn
+Ta|Tantalum|180.95|Kim loại|6|5|Rắn
+W|Tungsten|183.84|Kim loại|6|6|Rắn
+Re|Rhenium|186.21|Kim loại|6|7|Rắn
+Os|Osmium|190.23|Kim loại|6|8|Rắn
+Ir|Iridium|192.22|Kim loại|6|9|Rắn
+Pt|Platinum|195.08|Kim loại|6|10|Rắn
+Au|Gold|196.97|Kim loại|6|11|Rắn
+Hg|Mercury|200.59|Kim loại|6|12|Lỏng
+Tl|Thallium|204.38|Kim loại|6|13|Rắn
+Pb|Lead|207.2|Kim loại|6|14|Rắn
+Bi|Bismuth|208.98|Kim loại|6|15|Rắn
+Po|Polonium|209|Kim loại|6|16|Rắn
+At|Astatine|210|Phi kim|6|17|Rắn
+Rn|Radon|222|Khí hiếm|6|18|Khí
+Fr|Francium|223|Kim loại|7|1|Rắn
+Ra|Radium|226|Kim loại|7|2|Rắn
+Ac|Actinium|227|Kim loại|7|3|Rắn
+Th|Thorium|232.04|Kim loại|7|4|Rắn
+Pa|Protactinium|231.04|Kim loại|7|5|Rắn
+U|Uranium|238.03|Kim loại|7|6|Rắn
+Np|Neptunium|237|Kim loại|7|7|Rắn
+Pu|Plutonium|244|Kim loại|7|8|Rắn
+Am|Americium|243|Kim loại|7|9|Rắn
+Cm|Curium|247|Kim loại|7|10|Rắn
+Bk|Berkelium|247|Kim loại|7|11|Rắn
+Cf|Californium|251|Kim loại|7|12|Rắn
+Es|Einsteinium|252|Kim loại|7|13|Rắn
+Fm|Fermium|257|Kim loại|7|14|Rắn
+Md|Mendelevium|258|Kim loại|7|15|Rắn
+No|Nobelium|259|Kim loại|7|16|Rắn
+Lr|Lawrencium|266|Kim loại|7|17|Rắn
+Rf|Rutherfordium|267|Kim loại|7|4|Rắn
+Db|Dubnium|268|Kim loại|7|5|Rắn
+Sg|Seaborgium|269|Kim loại|7|6|Rắn
+Bh|Bohrium|270|Kim loại|7|7|Rắn
+Hs|Hassium|277|Kim loại|7|8|Rắn
+Mt|Meitnerium|278|Kim loại|7|9|Rắn
+Ds|Darmstadtium|281|Kim loại|7|10|Rắn
+Rg|Roentgenium|282|Kim loại|7|11|Rắn
+Cn|Copernicium|285|Kim loại|7|12|Rắn
+Nh|Nihonium|286|Kim loại|7|13|Rắn
+Fl|Flerovium|289|Kim loại|7|14|Rắn
+Mc|Moscovium|290|Kim loại|7|15|Rắn
+Lv|Livermorium|293|Kim loại|7|16|Rắn
+Ts|Tennessine|294|Phi kim|7|17|Rắn
+Og|Oganesson|294|Khí hiếm|7|18|Khí`;
+const elements=raw.trim().split('\n').map((s,i)=>{const [symbol,name,mass,category,period,group,state]=s.split('|');return {z:i+1,symbol,name,mass,category,period:+period,group:+group,state}});
+let shared={};const $=id=>document.getElementById(id);const grid=$('grid'),modal=$('modal'),details=$('details');
+function simple(e){return e.category}function css(e){return e.category==='Khí hiếm'?'cat-hi':e.category==='Phi kim'?'cat-phi':'cat-kim'}
+function card(e){return `<button class="el ${css(e)}" data-z="${e.z}"><div class="z">${e.z}</div><div class="sym">${e.symbol}</div><div class="name">${e.name}</div><div class="mass">${e.mass}</div></button>`}
+function render(){const q=$('search').value.trim().toLowerCase(),f=$('filter').value;grid.innerHTML='';for(let p=1;p<=7;p++){for(let c=1;c<=18;c++){const e=elements.find(x=>x.period===p&&x.group===c);const d=document.createElement('div');if(e&&(!q||String(e.z)===q||e.symbol.toLowerCase().includes(q)||e.name.toLowerCase().includes(q))&&(f==='all'||e.category===f))d.innerHTML=card(e);else d.className='empty';grid.appendChild(d)}}for(const [label,a,b] of [['Lantan',58,71],['Actini',90,103]]){const l=document.createElement('div');l.className='label';l.textContent=label+' (dãy riêng)';grid.appendChild(l);for(let z=a;z<=b;z++){const e=elements[z-1],d=document.createElement('div');if((!q||String(e.z)===q||e.symbol.toLowerCase().includes(q)||e.name.toLowerCase().includes(q))&&(f==='all'||e.category===f))d.innerHTML=card(e);else d.className='empty';grid.appendChild(d)}}document.querySelectorAll('.el').forEach(b=>b.onclick=()=>openElement(+b.dataset.z))}
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function openElement(z){const e=elements[z-1],s=shared[z]||{};details.innerHTML=`<div style="display:flex;gap:14px;align-items:center"><div class="sym" style="font-size:48px">${e.symbol}</div><div><h2>${e.name}</h2><p>Nguyên tố số ${z} · ${e.category} · Chu kỳ ${e.period}</p></div></div><div class="fields"><label>Cấu hình electron<textarea id="electronInput">${escapeHtml(s.electron_config)}</textarea></label><label>Tính chất vật lí<textarea id="physicalInput">${escapeHtml(s.physical_properties)}</textarea></label><label>Tính chất hoá học<textarea id="chemicalInput">${escapeHtml(s.chemical_properties)}</textarea></label><label>Fun facts<textarea id="funInput">${escapeHtml(s.fun_facts)}</textarea></label><button id="save" class="save">💾 Lưu thông tin chung</button><p id="saveStatus" class="status"></p></div>`;$('save').onclick=async()=>{const row={atomic_number:z,electron_config:$('electronInput').value,physical_properties:$('physicalInput').value,chemical_properties:$('chemicalInput').value,fun_facts:$('funInput').value,updated_at:new Date().toISOString()};$('saveStatus').textContent='Đang lưu…';const {error}=await db.from('elements_info').upsert(row,{onConflict:'atomic_number'});if(error){$('saveStatus').textContent='Lỗi lưu: '+error.message;return}shared[z]=row;$('saveStatus').textContent='✅ Đã lưu chung trên mạng!'};modal.classList.add('show')}
+async function load(){const {data,error}=await db.from('elements_info').select('*');if(error){$('status').textContent='Không tải được dữ liệu: '+error.message+' — kiểm tra cấu hình Supabase/policy.';return}shared={};(data||[]).forEach(r=>shared[r.atomic_number]=r);$('status').textContent='✅ Đã kết nối Supabase · '+data.length+' nguyên tố đã có dữ liệu chung';}
+$('search').oninput=render;$('filter').onchange=render;$('close').onclick=()=>modal.classList.remove('show');modal.onclick=e=>{if(e.target===modal)modal.classList.remove('show')};
+render();load();
+</script></body></html>
