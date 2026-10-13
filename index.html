@@ -176,6 +176,11 @@ function card(e) {
   return `<button class="el ${css(e)}" data-z="${e.z}"><div class="z">${e.z}</div><div class="sym">${e.symbol}</div><div class="name">${e.name}</div><div class="mass">${e.symbol === 'Cl' ? '35,5' : Math.round(Number(e.mass))}</div></button>`;
 }
 
+// Hàm render ô gộp (Lanthanide / Actinide) tại vị trí chu kỳ 6 và 7, nhóm 3
+function groupCard(rangeText, titleText) {
+  return `<div class="el cat-kim" style="cursor:default"><div class="z" style="font-size:11px;font-weight:bold">${rangeText}</div><div class="sym" style="font-size:15px;margin-top:4px">${titleText}</div></div>`;
+}
+
 function eIsSeparate(z) {
   return (z >= 58 && z <= 71) || (z >= 90 && z <= 103);
 }
@@ -187,13 +192,34 @@ function render() {
 
   for (let p = 1; p <= 7; p++) {
     for (let c = 1; c <= 18; c++) {
+      const d = document.createElement('div');
+
+      // Thay thế ô số 57 và 89 thành ô gộp họ
+      if (p === 6 && c === 3) {
+        if (!q && (f === 'all' || f === 'Kim loại')) {
+          d.innerHTML = groupCard('57 - 71', 'lanthanide');
+        } else {
+          d.className = 'empty';
+        }
+        grid.appendChild(d);
+        continue;
+      }
+      if (p === 7 && c === 3) {
+        if (!q && (f === 'all' || f === 'Kim loại')) {
+          d.innerHTML = groupCard('89 - 103', 'actinide');
+        } else {
+          d.className = 'empty';
+        }
+        grid.appendChild(d);
+        continue;
+      }
+
       const e = elements.find(x => {
         if (x.period !== p || x.group !== c) return false;
         if (eIsSeparate(x.z)) return false;
         return true;
       });
 
-      const d = document.createElement('div');
       if (e && (!q || String(e.z) === q || e.symbol.toLowerCase().includes(q) || e.name.toLowerCase().includes(q)) && (f === 'all' || e.category === f)) {
         d.innerHTML = card(e);
       } else {
@@ -221,7 +247,7 @@ function render() {
     }
   }
 
-  document.querySelectorAll('.el').forEach(b => {
+  document.querySelectorAll('.el[data-z]').forEach(b => {
     b.onclick = () => openElement(+b.dataset.z);
   });
 }
@@ -268,7 +294,7 @@ function openElement(z) {
       electron_config: document.getElementById("electronInput").value,
       physical_properties: document.getElementById("physicalInput").value,
       chemical_properties: document.getElementById("chemicalInput").value,
-      fun_facts: document.getElementById("funInput5" || "funInput").value || document.getElementById("funInput").value,
+      fun_facts: document.getElementById("funInput").value,
       updated_at: new Date().toISOString()
     };
 
