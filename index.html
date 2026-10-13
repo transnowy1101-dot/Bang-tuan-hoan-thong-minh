@@ -176,6 +176,12 @@ function render(){
 
   for(let p = 1; p <= 7; p++){
     for(let c = 1; c <= 18; c++){
+      if((p === 6 || p === 7) && c >= 4 && c <= 17){
+  const div = document.createElement('div');
+  div.className = 'empty';
+  grid.appendChild(div);
+  continue;
+}
       const e = elements.find(x => {
         if(x.period !== p || x.group !== c) return false;
 
@@ -202,8 +208,8 @@ function render(){
   }
 
   for(const [label,a,b] of [
-    ['Lantan',58,71],
-    ['Actini',90,103]
+    ['Lantan',57,71],
+    ['Actini',89,103]
   ]){
     const l = document.createElement('div');
     l.className = 'label';
