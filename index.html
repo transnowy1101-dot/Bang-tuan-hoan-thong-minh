@@ -178,7 +178,7 @@ function card(e) {
 
 // Hàm render ô gộp (Lanthanide / Actinide) tại vị trí chu kỳ 6 và 7, nhóm 3
 function groupCard(rangeText, titleText) {
-  return `<div class="el cat-kim" style="cursor:default"><div class="z" style="font-size:11px;font-weight:bold">${rangeText}</div><div class="sym" style="font-size:15px;margin-top:4px">${titleText}</div></div>`;
+  return `<div class="el cat-kim" style="cursor:default;padding:4px"><div class="z" style="font-size:10px;font-weight:bold">${rangeText}</div><div class="sym" style="font-size:13px;font-weight:700;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${titleText}</div></div>`;
 }
 
 function eIsSeparate(z) {
