@@ -176,13 +176,24 @@ function card(e) {
   return `<button class="el ${css(e)}" data-z="${e.z}"><div class="z">${e.z}</div><div class="sym">${e.symbol}</div><div class="name">${e.name}</div><div class="mass">${e.symbol === 'Cl' ? '35,5' : Math.round(Number(e.mass))}</div></button>`;
 }
 
-// Hàm render ô gộp (Lanthanide / Actinide) tại vị trí chu kỳ 6 và 7, nhóm 3
 function groupCard(rangeText, titleText) {
-  return `<div class="el cat-kim" style="cursor:default;padding:4px"><div class="z" style="font-size:10px;font-weight:bold">${rangeText}</div><div class="sym" style="font-size:13px;font-weight:700;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${titleText}</div></div>`;
+  return `<div class="el cat-kim" style="cursor:default;padding:4px"><div class="z" style="font-size:10px;font-weight:bold">${rangeText}</div><div class="sym" style="font-size:14px;font-weight:700;margin-top:8px;text-align:center">${titleText}</div></div>`;
 }
 
 function eIsSeparate(z) {
   return (z >= 58 && z <= 71) || (z >= 90 && z <= 103);
+}
+
+// Hàm chuyển đổi số nhóm (1-18) sang định dạng nhóm A/B La Mã truyền thống Việt Nam
+function formatGroup(g) {
+  const map = {
+    1: 'IA', 2: 'IIA',
+    3: 'IIIB', 4: 'IVB', 5: 'VB', 6: 'VIB', 7: 'VIIB',
+    8: 'VIIIB', 9: 'VIIIB', 10: 'VIIIB',
+    11: 'IB', 12: 'IIB',
+    13: 'IIIA', 14: 'IVA', 15: 'VA', 16: 'VIA', 17: 'VIIA', 18: 'VIIIA'
+  };
+  return map[g] ? `${map[g]} (Nhóm ${g})` : String(g);
 }
 
 function render() {
@@ -194,10 +205,9 @@ function render() {
     for (let c = 1; c <= 18; c++) {
       const d = document.createElement('div');
 
-      // Thay thế ô số 57 và 89 thành ô gộp họ
       if (p === 6 && c === 3) {
         if (!q && (f === 'all' || f === 'Kim loại')) {
-          d.innerHTML = groupCard('57 - 71', 'lanthanide');
+          d.innerHTML = groupCard('57 - 71', 'Lantan');
         } else {
           d.className = 'empty';
         }
@@ -206,7 +216,7 @@ function render() {
       }
       if (p === 7 && c === 3) {
         if (!q && (f === 'all' || f === 'Kim loại')) {
-          d.innerHTML = groupCard('89 - 103', 'actinide');
+          d.innerHTML = groupCard('89 - 103', 'Actini');
         } else {
           d.className = 'empty';
         }
@@ -274,7 +284,7 @@ function openElement(z) {
       <div class="fact"><b>Khối lượng nguyên tử</b>${escapeHtml(String(e.mass ?? "Chưa có dữ liệu"))}</div>
       <div class="fact"><b>Phân loại</b>${escapeHtml(e.category ?? "Chưa có dữ liệu")}</div>
       <div class="fact"><b>Chu kỳ</b>${escapeHtml(String(e.period ?? "Chưa có dữ liệu"))}</div>
-      <div class="fact"><b>Nhóm</b>${escapeHtml(String(e.group ?? "Chưa có dữ liệu"))}</div>
+      <div class="fact"><b>Nhóm</b>${escapeHtml(formatGroup(e.group))}</div>
       <div class="fact"><b>Trạng thái ở điều kiện thường</b>${escapeHtml(e.state ?? "Chưa có dữ liệu")}</div>
     </div>
     <h3>🧪 4 thông tin bổ sung</h3>
