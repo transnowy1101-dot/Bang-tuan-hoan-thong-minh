@@ -328,7 +328,19 @@ function openElement(z) {
 
   modal.classList.add("show");
 }
-async function load(){const {data,error}=await db.from('elements_info').select('*');if(error){$('status').textContent='Không tải được dữ liệu: '+error.message+' — kiểm tra cấu hình Supabase/policy.';return}shared={};(data||[]).forEach(r=>shared[r.atomic_number]=r);$('status').textContent='✅ Đã kết nối Supabase · '+data.length+' nguyên tố đã có dữ liệu chung';}
+async function load() {
+  try {
+    const { data, error } = await db.from('elements_info').select('*');
+    if (error) throw error;
+    
+    shared = {};
+    (data || []).forEach(r => shared[r.atomic_number] = r);
+    $('status').textContent = '✅ Đã kết nối Supabase · ' + data.length + ' nguyên tố đã có dữ liệu chung';
+  } catch (err) {
+    console.error(err);
+    $('status').textContent = '❌ Lỗi kết nối Supabase: ' + (err.message || 'Kiểm tra lại tên bảng hoặc mạng');
+  }
+}
 $('search').oninput=render;$('filter').onchange=render;$('close').onclick=()=>modal.classList.remove('show');modal.onclick=e=>{if(e.target===modal)modal.classList.remove('show')};
 render();load();
 </script></body></html>
