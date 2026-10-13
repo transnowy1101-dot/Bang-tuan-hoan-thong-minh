@@ -6,48 +6,41 @@
 <style>
 :root{color-scheme:dark;--bg:#07111f;--card:#0d1b2e;--line:#27415f;--txt:#eef5ff;--muted:#9fb2c9;--accent:#6ee7f7}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#07111f,#10213a);color:var(--txt);font-family:system-ui,Arial,sans-serif}main{padding:24px;max-width:1500px;margin:auto}header{text-align:center}h1{font-size:clamp(28px,4vw,44px);margin:8px}p{color:var(--muted)}.tools{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px}.tools input,.tools select{padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt)}#grid{display:grid;grid-template-columns:repeat(18,minmax(58px,1fr));gap:5px;overflow:auto}.el{background:var(--card);border:1px solid var(--line);border-top:3px solid #60a5fa;border-radius:8px;min-height:72px;color:var(--txt);text-align:left;padding:6px;cursor:pointer}.el:hover{border-color:var(--accent)}.z,.mass{font-size:10px;color:var(--muted)}.sym{font-size:23px;font-weight:800}.name{font-size:10px;overflow:hidden;text-overflow:ellipsis}.empty{visibility:hidden}.cat-hi{border-top-color:#34d399}.cat-kim{border-top-color:#f59e0b}.cat-phi{border-top-color:#60a5fa}.label{grid-column:1/-1;color:var(--muted);padding:8px}.legend{text-align:center;color:var(--muted);margin:16px}.modal{display:none;position:fixed;inset:0;background:#000a;align-items:center;justify-content:center;padding:14px;overflow:auto}.modal.show{display:flex}.panel{background:#0d1b2e;border:1px solid var(--line);border-radius:18px;padding:22px;width:min(600px,100%);max-height:95vh;overflow:auto;position:relative}.close{float:right;font-size:24px;background:none;border:0;color:var(--txt);cursor:pointer}.fields{display:grid;gap:10px}.fields label{font-size:13px;color:var(--muted)}textarea{width:100%;min-height:68px;background:#081626;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:10px;font:inherit}.save{padding:11px 15px;border-radius:9px;background:#164e63;color:white;border:1px solid #2b7890;cursor:pointer}.status{font-size:12px;color:var(--muted)}@media(max-width:700px){main{padding:12px}#grid{min-width:1100px}.table-wrap{overflow:auto}}
-.fact {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  line-height: 1.5;
-  padding: 14px;
-}
-
-.fact b {
-  display: block;
-  font-size: 13px;
-  margin-bottom: 4px;
-  line-height: 1.5;
-}
-
-.facts {
-  gap: 12px;
-}
-
-.editbox {
-  margin-top: 24px;
-  display: grid;
-  gap: 14px;
-}
-
-.editbox label {
-  display: block;
-  margin-bottom: 4px;
-  line-height: 1.6;
-}
+.fact{display:flex;flex-direction:column;gap:6px;line-height:1.5;padding:14px}
+.fact b{display:block;font-size:13px;margin-bottom:4px;line-height:1.5}
+.facts{gap:12px}
+.editbox{margin-top:24px;display:grid;gap:14px}
+.editbox label{display:block;margin-bottom:4px;line-height:1.6}
 </style>
 </head>
-<body><main><header><h1>⚛️ Bảng tuần hoàn thông minh</h1><p>Bấm vào nguyên tố để xem và cùng cập nhật thông tin. Dữ liệu được lưu chung trên Supabase.</p>
-<div class="tools"><input id="search" placeholder="🔎 Tìm tên, kí hiệu, số nguyên tử"><select id="filter"><option value="all">Tất cả</option><option>Kim loại</option><option>Phi kim</option><option>Khí hiếm</option></select></div><p id="status" class="status">Đang kết nối dữ liệu…</p></header>
-<div class="table-wrap"><div id="grid"></div></div><div class="legend">🟠 Kim loại  🔵 Phi kim  🟢 Khí hiếm</div></main>
+<body>
+<main>
+  <header>
+    <h1>⚛️ Bảng tuần hoàn thông minh</h1>
+    <p>Bấm vào nguyên tố để xem và cùng cập nhật thông tin. Dữ liệu được lưu chung trên Supabase.</p>
+    <div class="tools">
+      <input id="search" placeholder="🔎 Tìm tên, kí hiệu, số nguyên tử">
+      <select id="filter">
+        <option value="all">Tất cả</option>
+        <option>Kim loại</option>
+        <option>Phi kim</option>
+        <option>Khí hiếm</option>
+      </select>
+    </div>
+    <p id="status" class="status">Đang kết nối dữ liệu…</p>
+  </header>
+  <div class="table-wrap"><div id="grid"></div></div>
+  <div class="legend">🟠 Kim loại  🔵 Phi kim  🟢 Khí hiếm</div>
+</main>
 <div id="modal" class="modal"><section class="panel"><button id="close" class="close">×</button><div id="details"></div></section></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL='https://jwghzsqwyraebmwfqqlo.supabase.co';
-const SUPABASE_KEY='sb_publishable_0tvvamkFpB3-1harhxTjgg_7t-06Wms';
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const raw=`H|Hydrogen|1.008|Phi kim|1|1|Khí
+const SUPABASE_URL = 'https://jwghzsqwyraebmwfqqlo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_0tvvamkFpB3-1harhxTjgg_7t-06Wms';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const raw = `H|Hydrogen|1.008|Phi kim|1|1|Khí
 He|Helium|4.0026|Khí hiếm|1|18|Khí
 Li|Lithium|6.94|Kim loại|2|1|Rắn
 Be|Beryllium|9.0122|Kim loại|2|2|Rắn
@@ -165,66 +158,65 @@ Mc|Moscovium|290|Kim loại|7|15|Rắn
 Lv|Livermorium|293|Kim loại|7|16|Rắn
 Ts|Tennessine|294|Phi kim|7|17|Rắn
 Og|Oganesson|294|Khí hiếm|7|18|Khí`;
-const elements=raw.trim().split('\n').map((s,i)=>{const [symbol,name,mass,category,period,group,state]=s.split('|');return {z:i+1,symbol,name,mass,category,period:+period,group:+group,state}});
-let shared={};const $=id=>document.getElementById(id);const grid=$('grid'),modal=$('modal'),details=$('details');
-function simple(e){return e.category}function css(e){return e.category==='Khí hiếm'?'cat-hi':e.category==='Phi kim'?'cat-phi':'cat-kim'}
-function card(e){return `<button class="el ${css(e)}" data-z="${e.z}"><div class="z">${e.z}</div><div class="sym">${e.symbol}</div><div class="name">${e.name}</div><div class="mass">${e.symbol === 'Cl' ? '35,5' : Math.round(Number(e.mass))}</div></button>`}
-function render(){
+
+const elements = raw.trim().split('\n').map((s, i) => {
+  const [symbol, name, mass, category, period, group, state] = s.split('|');
+  return { z: i + 1, symbol, name, mass, category, period: +period, group: +group, state };
+});
+
+let shared = {};
+const $ = id => document.getElementById(id);
+const grid = $('grid'), modal = $('modal'), details =$('details');
+
+function css(e) {
+  return e.category === 'Khí hiếm' ? 'cat-hi' : e.category === 'Phi kim' ? 'cat-phi' : 'cat-kim';
+}
+
+function card(e) {
+  return `<button class="el ${css(e)}" data-z="${e.z}"><div class="z">${e.z}</div><div class="sym">${e.symbol}</div><div class="name">${e.name}</div><div class="mass">${e.symbol === 'Cl' ? '35,5' : Math.round(Number(e.mass))}</div></button>`;
+}
+
+function eIsSeparate(z) {
+  return (z >= 58 && z <= 71) || (z >= 90 && z <= 103);
+}
+
+function render() {
   const q = $('search').value.trim().toLowerCase();
   const f = $('filter').value;
   grid.innerHTML = '';
 
-  for(let p = 1; p <= 7; p++){
-    for(let c = 1; c <= 18; c++){
-     
+  for (let p = 1; p <= 7; p++) {
+    for (let c = 1; c <= 18; c++) {
       const e = elements.find(x => {
-        if(x.period !== p || x.group !== c) return false;
-
-        // Chỉ ẩn các nguyên tố thuộc họ Lantan (58-71) và Actini (90-103) ra khỏi bảng chính
-        if(eIsSeparate(x.z)) return false;
-
+        if (x.period !== p || x.group !== c) return false;
+        if (eIsSeparate(x.z)) return false;
         return true;
       });
 
       const d = document.createElement('div');
-
-      if(e && (!q ||
-        String(e.z) === q ||
-        e.symbol.toLowerCase().includes(q) ||
-        e.name.toLowerCase().includes(q)
-      ) && (f === 'all' || e.category === f)){
+      if (e && (!q || String(e.z) === q || e.symbol.toLowerCase().includes(q) || e.name.toLowerCase().includes(q)) && (f === 'all' || e.category === f)) {
         d.innerHTML = card(e);
       } else {
         d.className = 'empty';
       }
-
       grid.appendChild(d);
     }
   }
 
-  for(const [label,a,b] of [
-    ['Lantan',57,71],
-    ['Actini',89,103]
-  ]){
+  for (const [label, a, b] of [['Lantan', 57, 71], ['Actini', 89, 103]]) {
     const l = document.createElement('div');
     l.className = 'label';
     l.textContent = label + ' (dãy riêng)';
     grid.appendChild(l);
 
-    for(let z = a; z <= b; z++){
-      const e = elements[z-1];
+    for (let z = a; z <= b; z++) {
+      const e = elements[z - 1];
       const d = document.createElement('div');
-
-      if(e && (!q ||
-        String(e.z) === q ||
-        e.symbol.toLowerCase().includes(q) ||
-        e.name.toLowerCase().includes(q)
-      ) && (f === 'all' || e.category === f)){
+      if (e && (!q || String(e.z) === q || e.symbol.toLowerCase().includes(q) || e.name.toLowerCase().includes(q)) && (f === 'all' || e.category === f)) {
         d.innerHTML = card(e);
       } else {
         d.className = 'empty';
       }
-
       grid.appendChild(d);
     }
   }
@@ -234,12 +226,10 @@ function render(){
   });
 }
 
-function eIsSeparate(z){
-  // Sửa lại phạm vi để chỉ tách nguyên tố từ 58 đến 71 và từ 90 đến 103
-  return (z >= 58 && z <= 71) ||
-         (z >= 90 && z <= 103);
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
-function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;}[c]))}
+
 function openElement(z) {
   const e = elements[z - 1];
   const s = shared[z] || {};
@@ -252,44 +242,21 @@ function openElement(z) {
         <p>Nguyên tố số ${z}</p>
       </div>
     </div>
-
     <h3>📘 6 thông tin cơ bản</h3>
     <div class="facts">
-      <div class="fact">
-        <b>Số hiệu nguyên tử</b>${z}
-      </div>
-      <div class="fact">
-        <b>Khối lượng nguyên tử</b>${escapeHtml(String(e.mass ?? e.atomic_mass ?? "Chưa có dữ liệu"))}
-      </div>
-      <div class="fact">
-        <b>Phân loại</b>${escapeHtml(e.category ?? "Chưa có dữ liệu")}
-      </div>
-      <div class="fact">
-        <b>Chu kỳ</b>${escapeHtml(String(e.period ?? "Chưa có dữ liệu"))}
-      </div>
-      <div class="fact">
-        <b>Nhóm</b>${escapeHtml(String(e.group ?? "Chưa có dữ liệu"))}
-      </div>
-      <div class="fact">
-        <b>Trạng thái ở điều kiện thường</b>${escapeHtml(e.state ?? "Chưa có dữ liệu")}
-      </div>
+      <div class="fact"><b>Số hiệu nguyên tử</b>${z}</div>
+      <div class="fact"><b>Khối lượng nguyên tử</b>${escapeHtml(String(e.mass ?? "Chưa có dữ liệu"))}</div>
+      <div class="fact"><b>Phân loại</b>${escapeHtml(e.category ?? "Chưa có dữ liệu")}</div>
+      <div class="fact"><b>Chu kỳ</b>${escapeHtml(String(e.period ?? "Chưa có dữ liệu"))}</div>
+      <div class="fact"><b>Nhóm</b>${escapeHtml(String(e.group ?? "Chưa có dữ liệu"))}</div>
+      <div class="fact"><b>Trạng thái ở điều kiện thường</b>${escapeHtml(e.state ?? "Chưa có dữ liệu")}</div>
     </div>
-
     <h3>🧪 4 thông tin bổ sung</h3>
     <div class="editbox">
-      <label>Cấu hình electron
-        <textarea id="electronInput">${escapeHtml(s.electron_config || "")}</textarea>
-      </label>
-      <label>Tính chất vật lí
-        <textarea id="physicalInput">${escapeHtml(s.physical_properties || "")}</textarea>
-      </label>
-      <label>Tính chất hoá học
-        <textarea id="chemicalInput">${escapeHtml(s.chemical_properties || "")}</textarea>
-      </label>
-      <label>Fun facts
-        <textarea id="funInput">${escapeHtml(s.fun_facts || "")}</textarea>
-      </label>
-
+      <label>Cấu hình electron<textarea id="electronInput">${escapeHtml(s.electron_config || "")}</textarea></label>
+      <label>Tính chất vật lí<textarea id="physicalInput">${escapeHtml(s.physical_properties || "")}</textarea></label>
+      <label>Tính chất hoá học<textarea id="chemicalInput">${escapeHtml(s.chemical_properties || "")}</textarea></label>
+      <label>Fun facts<textarea id="funInput">${escapeHtml(s.fun_facts || "")}</textarea></label>
       <button id="save" class="save">💾 Lưu thông tin chung</button>
       <p id="saveStatus" class="status"></p>
     </div>
@@ -301,7 +268,7 @@ function openElement(z) {
       electron_config: document.getElementById("electronInput").value,
       physical_properties: document.getElementById("physicalInput").value,
       chemical_properties: document.getElementById("chemicalInput").value,
-      fun_facts: document.getElementById("funInput").value,
+      fun_facts: document.getElementById("funInput5" || "funInput").value || document.getElementById("funInput").value,
       updated_at: new Date().toISOString()
     };
 
@@ -311,12 +278,8 @@ function openElement(z) {
     button.disabled = true;
 
     try {
-      const { error } = await db
-        .from("elements_info")
-        .upsert(row, { onConflict: "atomic_number" });
-
+      const { error } = await db.from("elements_info").upsert(row, { onConflict: "atomic_number" });
       if (error) throw error;
-
       shared[z] = row;
       status.textContent = "✅ Đã lưu thông tin chung!";
     } catch (error) {
@@ -328,19 +291,27 @@ function openElement(z) {
 
   modal.classList.add("show");
 }
+
 async function load() {
   try {
     const { data, error } = await db.from('elements_info').select('*');
     if (error) throw error;
-    
     shared = {};
     (data || []).forEach(r => shared[r.atomic_number] = r);
     $('status').textContent = '✅ Đã kết nối Supabase · ' + data.length + ' nguyên tố đã có dữ liệu chung';
   } catch (err) {
     console.error(err);
-    $('status').textContent = '❌ Lỗi kết nối Supabase: ' + (err.message || 'Kiểm tra lại tên bảng hoặc mạng');
+    $('status').textContent = '❌ Lỗi kết nối Supabase: ' + (err.message || 'Kiểm tra lại cấu hình');
   }
 }
-$('search').oninput=render;$('filter').onchange=render;$('close').onclick=()=>modal.classList.remove('show');modal.onclick=e=>{if(e.target===modal)modal.classList.remove('show')};
-render();load();
-</script></body></html>
+
+$('search').oninput = render;
+$('filter').onchange = render;
+$('close').onclick = () => modal.classList.remove('show');
+modal.onclick = e => { if (e.target === modal) modal.classList.remove('show'); };
+
+render();
+load();
+</script>
+</body>
+</html>
