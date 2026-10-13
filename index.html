@@ -40,7 +40,7 @@
 </head>
 <body><main><header><h1>⚛️ Bảng tuần hoàn thông minh</h1><p>Bấm vào nguyên tố để xem và cùng cập nhật thông tin. Dữ liệu được lưu chung trên Supabase.</p>
 <div class="tools"><input id="search" placeholder="🔎 Tìm tên, kí hiệu, số nguyên tử"><select id="filter"><option value="all">Tất cả</option><option>Kim loại</option><option>Phi kim</option><option>Khí hiếm</option></select></div><p id="status" class="status">Đang kết nối dữ liệu…</p></header>
-<div class="table-wrap"><div id="grid"></div></div><div class="legend">🟠 Kim loại　 🔵 Phi kim　 🟢 Khí hiếm</div></main>
+<div class="table-wrap"><div id="grid"></div></div><div class="legend">🟠 Kim loại  🔵 Phi kim  🟢 Khí hiếm</div></main>
 <div id="modal" class="modal"><section class="panel"><button id="close" class="close">×</button><div id="details"></div></section></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -180,7 +180,7 @@ function render(){
       const e = elements.find(x => {
         if(x.period !== p || x.group !== c) return false;
 
-        // Chừa hai dãy riêng để không hiển thị trùng
+        // Chỉ ẩn các nguyên tố thuộc họ Lantan (58-71) và Actini (90-103) ra khỏi bảng chính
         if(eIsSeparate(x.z)) return false;
 
         return true;
@@ -235,10 +235,11 @@ function render(){
 }
 
 function eIsSeparate(z){
+  // Sửa lại phạm vi để chỉ tách nguyên tố từ 58 đến 71 và từ 90 đến 103
   return (z >= 58 && z <= 71) ||
          (z >= 90 && z <= 103);
 }
-function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;}[c]))}
 function openElement(z) {
   const e = elements[z - 1];
   const s = shared[z] || {};
