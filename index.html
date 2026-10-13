@@ -169,7 +169,74 @@ const elements=raw.trim().split('\n').map((s,i)=>{const [symbol,name,mass,catego
 let shared={};const $=id=>document.getElementById(id);const grid=$('grid'),modal=$('modal'),details=$('details');
 function simple(e){return e.category}function css(e){return e.category==='Khí hiếm'?'cat-hi':e.category==='Phi kim'?'cat-phi':'cat-kim'}
 function card(e){return `<button class="el ${css(e)}" data-z="${e.z}"><div class="z">${e.z}</div><div class="sym">${e.symbol}</div><div class="name">${e.name}</div><div class="mass">${e.symbol === 'Cl' ? '35,5' : Math.round(Number(e.mass))}</div></button>`}
-function render(){const q=$('search').value.trim().toLowerCase(),f=$('filter').value;grid.innerHTML='';for(let p=1;p<=7;p++){for(let c=1;c<=18;c++){const e=elements.find(x=>x.period===p&&x.group===c);const d=document.createElement('div');if(e&&(!q||String(e.z)===q||e.symbol.toLowerCase().includes(q)||e.name.toLowerCase().includes(q))&&(f==='all'||e.category===f))d.innerHTML=card(e);else d.className='empty';grid.appendChild(d)}}for(const [label,a,b] of [['Lantan',58,71],['Actini',90,103]]){const l=document.createElement('div');l.className='label';l.textContent=label+' (dãy riêng)';grid.appendChild(l);for(let z=a;z<=b;z++){const e=elements[z-1],d=document.createElement('div');if((!q||String(e.z)===q||e.symbol.toLowerCase().includes(q)||e.name.toLowerCase().includes(q))&&(f==='all'||e.category===f))d.innerHTML=card(e);else d.className='empty';grid.appendChild(d)}}document.querySelectorAll('.el').forEach(b=>b.onclick=()=>openElement(+b.dataset.z))}
+function render(){
+  const q = $('search').value.trim().toLowerCase();
+  const f = $('filter').value;
+  grid.innerHTML = '';
+
+  for(let p = 1; p <= 7; p++){
+    for(let c = 1; c <= 18; c++){
+      const e = elements.find(x => {
+        if(x.period !== p || x.group !== c) return false;
+
+        // Chừa hai dãy riêng để không hiển thị trùng
+        if(eIsSeparate(x.z)) return false;
+
+        return true;
+      });
+
+      const d = document.createElement('div');
+
+      if(e && (!q ||
+        String(e.z) === q ||
+        e.symbol.toLowerCase().includes(q) ||
+        e.name.toLowerCase().includes(q)
+      ) && (f === 'all' || e.category === f)){
+        d.innerHTML = card(e);
+      } else {
+        d.className = 'empty';
+      }
+
+      grid.appendChild(d);
+    }
+  }
+
+  for(const [label,a,b] of [
+    ['Lantan',58,71],
+    ['Actini',90,103]
+  ]){
+    const l = document.createElement('div');
+    l.className = 'label';
+    l.textContent = label + ' (dãy riêng)';
+    grid.appendChild(l);
+
+    for(let z = a; z <= b; z++){
+      const e = elements[z-1];
+      const d = document.createElement('div');
+
+      if(e && (!q ||
+        String(e.z) === q ||
+        e.symbol.toLowerCase().includes(q) ||
+        e.name.toLowerCase().includes(q)
+      ) && (f === 'all' || e.category === f)){
+        d.innerHTML = card(e);
+      } else {
+        d.className = 'empty';
+      }
+
+      grid.appendChild(d);
+    }
+  }
+
+  document.querySelectorAll('.el').forEach(b => {
+    b.onclick = () => openElement(+b.dataset.z);
+  });
+}
+
+function eIsSeparate(z){
+  return (z >= 58 && z <= 71) ||
+         (z >= 90 && z <= 103);
+}
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function openElement(z) {
   const e = elements[z - 1];
