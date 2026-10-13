@@ -11,6 +11,8 @@
 .facts{gap:12px}
 .editbox{margin-top:24px;display:grid;gap:14px}
 .editbox label{display:block;margin-bottom:4px;line-height:1.6}
+.qr-preview{max-width:180px;margin-top:8px;border-radius:8px;border:1px solid var(--line);background:white;padding:4px}
+.file-input-box{background:#081626;border:1px dashed var(--line);padding:12px;border-radius:9px;text-align:center}
 </style>
 </head>
 <body>
@@ -184,7 +186,6 @@ function eIsSeparate(z) {
   return (z >= 58 && z <= 71) || (z >= 90 && z <= 103);
 }
 
-// Hàm chuyển đổi số nhóm (1-18) sang định dạng nhóm A/B La Mã truyền thống Việt Nam
 function formatGroup(g) {
   const map = {
     1: 'IA', 2: 'IIA',
@@ -287,16 +288,64 @@ function openElement(z) {
       <div class="fact"><b>Nhóm</b>${escapeHtml(formatGroup(e.group))}</div>
       <div class="fact"><b>Trạng thái ở điều kiện thường</b>${escapeHtml(e.state ?? "Chưa có dữ liệu")}</div>
     </div>
-    <h3>🧪 4 thông tin bổ sung</h3>
+    <h3>🧪 Thông tin bổ sung & Infographic</h3>
     <div class="editbox">
       <label>Cấu hình electron<textarea id="electronInput">${escapeHtml(s.electron_config || "")}</textarea></label>
       <label>Tính chất vật lí<textarea id="physicalInput">${escapeHtml(s.physical_properties || "")}</textarea></label>
       <label>Tính chất hoá học<textarea id="chemicalInput">${escapeHtml(s.chemical_properties || "")}</textarea></label>
       <label>Fun facts<textarea id="funInput">${escapeHtml(s.fun_facts || "")}</textarea></label>
-      <button id="save" class="save">💾 Lưu thông tin chung</button>
+      
+      <label>Mã QR của Infographic (Chọn ảnh từ thiết bị)</label>
+      <div class="file-input-box">
+        <input type="file" id="qrFile" accept="image/*" style="width:100%;color:var(--txt)">
+      </div>
+      <input type="hidden" id="qrInput" value="${escapeHtml(s.qr_image_url || "")}">
+
+      <div id="qrPreviewContainer">
+        ${s.qr_image_url ? `<p style="font-size:12px;color:var(--muted);margin-top:8px;margin-bottom:4px">Mã QR hiện tại:</p><img src="${escapeHtml(s.qr_image_url)}" class="qr-preview" crossorigin="anonymous">` : ''}
+      </div>
+
+      <button id="save" class="save" style="margin-top:10px">💾 Lưu thông tin chung</button>
       <p id="saveStatus" class="status"></p>
     </div>
   `;
+
+  // Xử lý khi chọn file ảnh từ máy
+  document.getElementById("qrFile").onchange = async (ev) => {
+    const file = ev.target.files[0];
+    if (!file) return;
+
+    const status = document.getElementById("saveStatus");
+    status.textContent = "⏳ Đang tải ảnh lên Storage...";
+
+    const fileName = `qr_${z}_${Date.now()}.${file.name.split('.').pop()}`;
+
+    try {
+      // Upload ảnh vào bucket 'qr-images' trên Supabase Storage
+      const { data, error } = await db.storage
+        .from('qr-images')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      // Lấy public URL của ảnh vừa upload
+      const { data: publicURLData } = db.storage
+        .from('qr-images')
+        .getPublicUrl(fileName);
+
+      const publicUrl = publicURLData.publicUrl;
+
+      // Gán vào input ẩn và hiện preview ảnh
+      document.getElementById("qrInput").value = publicUrl;
+      document.getElementById("qrPreviewContainer").innerHTML = `
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;margin-bottom:4px">Mã QR mới chọn (chưa lưu):</p>
+        <img src="${publicUrl}" class="qr-preview">
+      `;
+      status.textContent = "✅ Tải ảnh lên thành công! Bấm 'Lưu thông tin chung' để hoàn tất.";
+    } catch (err) {
+      status.textContent = "❌ Lỗi tải ảnh: " + err.message;
+    }
+  };
 
   document.getElementById("save").onclick = async () => {
     const row = {
@@ -305,6 +354,7 @@ function openElement(z) {
       physical_properties: document.getElementById("physicalInput").value,
       chemical_properties: document.getElementById("chemicalInput").value,
       fun_facts: document.getElementById("funInput").value,
+      qr_image_url: document.getElementById("qrInput").value,
       updated_at: new Date().toISOString()
     };
 
@@ -317,7 +367,7 @@ function openElement(z) {
       const { error } = await db.from("elements_info").upsert(row, { onConflict: "atomic_number" });
       if (error) throw error;
       shared[z] = row;
-      status.textContent = "✅ Đã lưu thông tin chung!";
+      status.textContent = "✅ Đã lưu thông tin chung và mã QR thành công!";
     } catch (error) {
       status.textContent = "❌ Lỗi lưu: " + error.message;
     } finally {
