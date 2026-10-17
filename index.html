@@ -165,13 +165,8 @@ const elements = raw.trim().split('\n').map((s, i) => {
   let [symbol, name, mass, category, period, group, state] = s.split('|');
   let z = i + 1;
 
-  // Cập nhật khối lượng cho Hs (nguyên tố 108) thành 270
   if (z === 108) mass = '270';
-  
-  // Cập nhật trạng thái cho Cn (nguyên tố 112)
   if (z === 112) state = 'Lỏng hoặc khí';
-  
-  // Cập nhật trạng thái cho Og (nguyên tố 118)
   if (z === 118) state = 'Rắn';
 
   return { z, symbol, name, mass, category, period: +period, group: +group, state };
@@ -282,8 +277,8 @@ function openElement(z) {
   const e = elements[z - 1];
   const s = shared[z] || {};
 
-  // Thêm chú thích cho các nguyên tố từ 107 đến 118
-  const note = (z >= 107 && z <= 118) ? " (dự đoán vì chỉ tồn tại vài nguyên tử trong vài mi-li-giây, khiến việc đo đạc bất khả thi)" : "";
+  // Tạo chuỗi chú thích cho tiêu đề từ nguyên tố 107 đến 118
+  const noteTitle = (z >= 107 && z <= 118) ? "<br><span style='font-size:11px;color:var(--muted);font-weight:normal'>(dự đoán vì chỉ tồn tại vài nguyên tử trong vài mi-li-giây, khiến việc đo đạc bất khả thi)</span>" : "";
 
   details.innerHTML = `
     <div class="element-header">
@@ -297,16 +292,16 @@ function openElement(z) {
     <div class="facts">
       <div class="fact"><b>Số hiệu nguyên tử</b>${z}</div>
       <div class="fact"><b>Khối lượng nguyên tử</b>${escapeHtml(String(e.mass ?? "Chưa có dữ liệu"))}</div>
-      <div class="fact"><b>Phân loại</b>${escapeHtml(e.category ?? "Chưa có dữ liệu")}${note}</div>
+      <div class="fact"><b>Phân loại${noteTitle}</b>${escapeHtml(e.category ?? "Chưa có dữ liệu")}</div>
       <div class="fact"><b>Chu kỳ</b>${escapeHtml(String(e.period ?? "Chưa có dữ liệu"))}</div>
       <div class="fact"><b>Nhóm</b>${escapeHtml(formatGroup(e.group))}</div>
-      <div class="fact"><b>Trạng thái ở điều kiện thường</b>${escapeHtml(e.state ?? "Chưa có dữ liệu")}${note}</div>
+      <div class="fact"><b>Trạng thái ở điều kiện thường${noteTitle}</b>${escapeHtml(e.state ?? "Chưa có dữ liệu")}</div>
     </div>
     <h3>🧪 Thông tin bổ sung & Infographic</h3>
     <div class="editbox">
       <label>Cấu hình electron<textarea id="electronInput">${escapeHtml(s.electron_config || "")}</textarea></label>
-      <label>Tính chất vật lí<textarea id="physicalInput">${escapeHtml(s.physical_properties || (z >= 107 && z <= 118 ? "Chưa xác định (dự đoán vì chỉ tồn tại vài nguyên tử trong vài mi-li-giây, khiến việc đo đạc bất khả thi)" : ""))}</textarea></label>
-      <label>Tính chất hoá học<textarea id="chemicalInput">${escapeHtml(s.chemical_properties || (z >= 107 && z <= 118 ? "Chưa xác định (dự đoán vì chỉ tồn tại vài nguyên tử trong vài mi-li-giây, khiến việc đo đạc bất khả thi)" : ""))}</textarea></label>
+      <label>Tính chất vật lí${noteTitle}<textarea id="physicalInput">${escapeHtml(s.physical_properties || "")}</textarea></label>
+      <label>Tính chất hoá học${noteTitle}<textarea id="chemicalInput">${escapeHtml(s.chemical_properties || "")}</textarea></label>
       <label>Fun facts<textarea id="funInput">${escapeHtml(s.fun_facts || "")}</textarea></label>
       
       <label>Mã QR của Infographic (Chọn ảnh từ thiết bị)</label>
@@ -409,5 +404,7 @@ modal.onclick = e => { if (e.target === modal) modal.classList.remove('show'); }
 render();
 load();
 </script>
+</body>
+</html>
 </body>
 </html>
