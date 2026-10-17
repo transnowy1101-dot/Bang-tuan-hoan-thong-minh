@@ -162,8 +162,19 @@ Ts|Tennessine|294|Phi kim|7|17|Rắn
 Og|Oganesson|294|Khí hiếm|7|18|Khí`;
 
 const elements = raw.trim().split('\n').map((s, i) => {
-  const [symbol, name, mass, category, period, group, state] = s.split('|');
-  return { z: i + 1, symbol, name, mass, category, period: +period, group: +group, state };
+  let [symbol, name, mass, category, period, group, state] = s.split('|');
+  let z = i + 1;
+
+  // Cập nhật khối lượng cho Hs (nguyên tố 108) thành 270
+  if (z === 108) mass = '270';
+  
+  // Cập nhật trạng thái cho Cn (nguyên tố 112)
+  if (z === 112) state = 'Lỏng hoặc khí';
+  
+  // Cập nhật trạng thái cho Og (nguyên tố 118)
+  if (z === 118) state = 'Rắn';
+
+  return { z, symbol, name, mass, category, period: +period, group: +group, state };
 });
 
 let shared = {};
@@ -194,7 +205,7 @@ function formatGroup(g) {
     11: 'IB', 12: 'IIB',
     13: 'IIIA', 14: 'IVA', 15: 'VA', 16: 'VIA', 17: 'VIIA', 18: 'VIIIA'
   };
-  return map[g] ? `${map[g]} (Nhóm ${g})` : String(g);
+  return map[g] ? map[g] : String(g);
 }
 
 function render() {
@@ -271,6 +282,9 @@ function openElement(z) {
   const e = elements[z - 1];
   const s = shared[z] || {};
 
+  // Thêm chú thích cho các nguyên tố từ 107 đến 118
+  const note = (z >= 107 && z <= 118) ? " (dự đoán vì chỉ tồn tại vài nguyên tử trong vài mi-li-giây, khiến việc đo đạc bất khả thi)" : "";
+
   details.innerHTML = `
     <div class="element-header">
       <div class="sym" style="font-size:48px">${escapeHtml(e.symbol)}</div>
@@ -283,19 +297,19 @@ function openElement(z) {
     <div class="facts">
       <div class="fact"><b>Số hiệu nguyên tử</b>${z}</div>
       <div class="fact"><b>Khối lượng nguyên tử</b>${escapeHtml(String(e.mass ?? "Chưa có dữ liệu"))}</div>
-      <div class="fact"><b>Phân loại</b>${escapeHtml(e.category ?? "Chưa có dữ liệu")}</div>
+      <div class="fact"><b>Phân loại</b>${escapeHtml(e.category ?? "Chưa có dữ liệu")}${note}</div>
       <div class="fact"><b>Chu kỳ</b>${escapeHtml(String(e.period ?? "Chưa có dữ liệu"))}</div>
       <div class="fact"><b>Nhóm</b>${escapeHtml(formatGroup(e.group))}</div>
-      <div class="fact"><b>Trạng thái ở điều kiện thường</b>${escapeHtml(e.state ?? "Chưa có dữ liệu")}</div>
+      <div class="fact"><b>Trạng thái ở điều kiện thường</b>${escapeHtml(e.state ?? "Chưa có dữ liệu")}${note}</div>
     </div>
     <h3>🧪 Thông tin bổ sung & Infographic</h3>
     <div class="editbox">
       <label>Cấu hình electron<textarea id="electronInput">${escapeHtml(s.electron_config || "")}</textarea></label>
-      <label>Tính chất vật lí<textarea id="physicalInput">${escapeHtml(s.physical_properties || "")}</textarea></label>
-      <label>Tính chất hoá học<textarea id="chemicalInput">${escapeHtml(s.chemical_properties || "")}</textarea></label>
+      <label>Tính chất vật lí<textarea id="physicalInput">${escapeHtml(s.physical_properties || (z >= 107 && z <= 118 ? "Chưa xác định (dự đoán vì chỉ tồn tại vài nguyên tử trong vài mi-li-giây, khiến việc đo đạc bất khả thi)" : ""))}</textarea></label>
+      <label>Tính chất hoá học<textarea id="chemicalInput">${escapeHtml(s.chemical_properties || (z >= 107 && z <= 118 ? "Chưa xác định (dự đoán vì chỉ tồn tại vài nguyên tử trong vài mi-li-giây, khiến việc đo đạc bất khả thi)" : ""))}</textarea></label>
       <label>Fun facts<textarea id="funInput">${escapeHtml(s.fun_facts || "")}</textarea></label>
       
-      <label>Mã QR của Infographic </label>
+      <label>Mã QR của Infographic (Chọn ảnh từ thiết bị)</label>
       <div class="file-input-box">
         <input type="file" id="qrFile" accept="image/*" style="width:100%;color:var(--txt)">
       </div>
@@ -310,7 +324,6 @@ function openElement(z) {
     </div>
   `;
 
-  // Xử lý khi chọn file ảnh từ máy
   document.getElementById("qrFile").onchange = async (ev) => {
     const file = ev.target.files[0];
     if (!file) return;
@@ -321,21 +334,18 @@ function openElement(z) {
     const fileName = `qr_${z}_${Date.now()}.${file.name.split('.').pop()}`;
 
     try {
-      // Upload ảnh vào bucket 'qr-images' trên Supabase Storage
       const { data, error } = await db.storage
         .from('qr-images')
         .upload(fileName, file);
 
       if (error) throw error;
 
-      // Lấy public URL của ảnh vừa upload
       const { data: publicURLData } = db.storage
         .from('qr-images')
         .getPublicUrl(fileName);
 
       const publicUrl = publicURLData.publicUrl;
 
-      // Gán vào input ẩn và hiện preview ảnh
       document.getElementById("qrInput").value = publicUrl;
       document.getElementById("qrPreviewContainer").innerHTML = `
         <p style="font-size:12px;color:var(--muted);margin-top:8px;margin-bottom:4px">Mã QR mới chọn (chưa lưu):</p>
