@@ -21,7 +21,7 @@
   <header>
     <div class="visitor-badge" id="visitorCount">👁️ Lượt xem: Đang tải...</div>
     <h1>⚛️ Bảng tuần hoàn thông minh</h1>
-    <p>Bấm vào nguyên tố để xem và cùng cập nhật thông tin. Dữ liệu được lưu chung trên Supabase.</p>
+    <p>Bấm vào nguyên tố để xem thông tin. Dữ liệu được lấy chung từ Supabase.</p>
     <div class="tools">
       <input id="search" placeholder="🔎 Tìm tên, kí hiệu, số nguyên tử">
       <select id="filter">
@@ -263,6 +263,7 @@ function render() {
     }
   }
 
+  // Bắt buộc phải có đoạn này để gán sự kiện click mở bảng thông tin khi nhấn vào ô nguyên tố
   document.querySelectorAll('.el[data-z]').forEach(b => {
     b.onclick = () => openElement(+b.dataset.z);
   });
@@ -277,7 +278,7 @@ function openElement(z) {
   const s = shared[z] || {};
   const noteTitle = (z >= 107 && z <= 118) ? "<br><span style='font-size:11px;color:var(--muted);font-weight:normal'>(dự đoán vì chỉ tồn tại vài nguyên tử trong vài mi-li-giây, khiến việc đo đạc bất khả thi)</span>" : "";
 
-  // Kiểm tra xem máy hiện tại có phải là Admin (chủ web) không
+  // Kiểm tra máy hiện tại có phải là Admin (chủ web) không
   const isAdmin = localStorage.getItem('is_admin') === 'true';
 
   details.innerHTML = `
@@ -319,7 +320,10 @@ function openElement(z) {
     </div>
   `;
 
-  if (!isAdmin) return; // Nếu không phải admin thì dừng ở đây, không gán sự kiện upload/lưu
+  if (!isAdmin) {
+    modal.classList.add("show");
+    return; // Nếu không phải admin thì dừng tại đây, không cho gán sự kiện upload/lưu
+  }
 
   document.getElementById("qrFile").onchange = async (ev) => {
     const file = ev.target.files[0];
