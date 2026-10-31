@@ -277,6 +277,9 @@ function openElement(z) {
   const s = shared[z] || {};
   const noteTitle = (z >= 107 && z <= 118) ? "<br><span style='font-size:11px;color:var(--muted);font-weight:normal'>(dự đoán vì chỉ tồn tại vài nguyên tử trong vài mi-li-giây, khiến việc đo đạc bất khả thi)</span>" : "";
 
+  // Kiểm tra xem máy hiện tại có phải là Admin (chủ web) không
+  const isAdmin = localStorage.getItem('is_admin') === 'true';
+
   details.innerHTML = `
     <div class="element-header">
       <div class="sym" style="font-size:48px">${escapeHtml(e.symbol)}</div>
@@ -296,14 +299,14 @@ function openElement(z) {
     </div>
     <h3>🧪 Thông tin bổ sung & Infographic</h3>
     <div class="editbox">
-      <label>Cấu hình electron<textarea id="electronInput">${escapeHtml(s.electron_config || "")}</textarea></label>
-      <label>Tính chất vật lí${noteTitle}<textarea id="physicalInput">${escapeHtml(s.physical_properties || "")}</textarea></label>
-      <label>Tính chất hoá học${noteTitle}<textarea id="chemicalInput">${escapeHtml(s.chemical_properties || "")}</textarea></label>
-      <label>Fun facts<textarea id="funInput">${escapeHtml(s.fun_facts || "")}</textarea></label>
+      <label>Cấu hình electron<textarea id="electronInput" ${isAdmin ? '' : 'disabled'}>${escapeHtml(s.electron_config || "")}</textarea></label>
+      <label>Tính chất vật lí${noteTitle}<textarea id="physicalInput" ${isAdmin ? '' : 'disabled'}>${escapeHtml(s.physical_properties || "")}</textarea></label>
+      <label>Tính chất hoá học${noteTitle}<textarea id="chemicalInput" ${isAdmin ? '' : 'disabled'}>${escapeHtml(s.chemical_properties || "")}</textarea></label>
+      <label>Fun facts<textarea id="funInput" ${isAdmin ? '' : 'disabled'}>${escapeHtml(s.fun_facts || "")}</textarea></label>
       
       <label>Mã QR của Infographic (Chọn ảnh từ thiết bị)</label>
-      <div class="file-input-box">
-        <input type="file" id="qrFile" accept="image/*" style="width:100%;color:var(--txt)">
+      <div class="file-input-box" ${isAdmin ? '' : 'style="opacity:0.6;pointer-events:none"'}>
+        <input type="file" id="qrFile" accept="image/*" style="width:100%;color:var(--txt)" ${isAdmin ? '' : 'disabled'}>
       </div>
       <input type="hidden" id="qrInput" value="${escapeHtml(s.qr_image_url || "")}">
 
@@ -311,10 +314,12 @@ function openElement(z) {
         ${s.qr_image_url ? `<p style="font-size:12px;color:var(--muted);margin-top:8px;margin-bottom:4px">Mã QR hiện tại:</p><img src="${escapeHtml(s.qr_image_url)}" class="qr-preview" crossorigin="anonymous">` : ''}
       </div>
 
-      <button id="save" class="save" style="margin-top:10px">💾 Lưu thông tin chung</button>
+      ${isAdmin ? `<button id="save" class="save" style="margin-top:10px">💾 Lưu thông tin chung</button>` : `<p style="color:var(--muted);font-style:italic;margin-top:10px">🔒 Chế độ chỉ xem. Chỉ chủ web mới có quyền chỉnh sửa và lưu.</p>`}
       <p id="saveStatus" class="status"></p>
     </div>
   `;
+
+  if (!isAdmin) return; // Nếu không phải admin thì dừng ở đây, không gán sự kiện upload/lưu
 
   document.getElementById("qrFile").onchange = async (ev) => {
     const file = ev.target.files[0];
@@ -393,10 +398,8 @@ async function load() {
   }
 }
 
-// Hàm lấy và tự động tăng lượt truy cập trực tiếp từ Supabase
 async function updateVisitorCount() {
   try {
-    // 1. Lấy dữ liệu hiện tại từ bảng site_stats
     let { data, error } = await db.from('site_stats').select('visits').eq('id', 1).single();
     
     let currentVisits = 1;
@@ -404,11 +407,9 @@ async function updateVisitorCount() {
       currentVisits = data.visits + 1;
     }
 
-    // 2. Cập nhật lại số mới lên Supabase
     let { error: updateError } = await db.from('site_stats').upsert({ id: 1, visits: currentVisits });
     if (updateError) throw updateError;
 
-    // 3. Hiển thị lên giao diện
     $('visitorCount').innerHTML = `👁️ Lượt xem: ${currentVisits.toLocaleString()}`;
   } catch (e) {
     console.error("Lỗi đếm lượt xem:", e);
